@@ -3,6 +3,7 @@
 
 require 'evdev' if RUBY_PLATFORM.match?(/linux/i)
 require 'logger'
+require 'rqrcode'
 
 class BarcodeScanner
 
