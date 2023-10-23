@@ -61,22 +61,22 @@ class BarcodeScanner
 
     def detect_scanner
       # Detect barcode scanner
-      xinput_device = `xinput list | grep "wch.cn"`
-      xinput_device =~ /\w.*id=(\d{1,3}).*/
-      xinput_device_id = Regexp.last_match(1).to_i
-      logger.info "Barcode reader xinput device id #{xinput_device_id}"
+      # xinput_device = `xinput list | grep "wch.cn"`
+      # xinput_device =~ /\w.*id=(\d{1,3}).*/
+      # xinput_device_id = Regexp.last_match(1).to_i
+      # logger.info "Barcode reader xinput device id #{xinput_device_id}"
 
-      device_node = `xinput list-props #{xinput_device_id} | grep 'Device Node'`
-      device_node =~ /\w.*\/dev\/input\/event(\d{1,3}).*/
-      device_event_id = Regexp.last_match(1).to_i
-      logger.info "Barcode reader device event id #{device_event_id}"
+      # device_node = `xinput list-props #{xinput_device_id} | grep 'Device Node'`
+      # device_node =~ /\w.*\/dev\/input\/event(\d{1,3}).*/
+      # device_event_id = Regexp.last_match(1).to_i
+      # logger.info "Barcode reader device event id #{device_event_id}"
 
-      if xinput_device_id == 0 || device_event_id == 0
-        logger.error 'Exiting barcode reader wasn\'t found!'
-      end
+      # if xinput_device_id == 0 || device_event_id == 0
+      #   logger.error 'Exiting barcode reader wasn\'t found!'
+      # end
 
       # Attach device
-      @device = Evdev.new("/dev/input/event#{device_event_id}")
+      @device = Evdev.new("/dev/input/event0")
       @cmd = ''
 
       # Print device description
