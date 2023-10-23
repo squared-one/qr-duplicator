@@ -117,3 +117,5 @@ class BarcodeScanner
       exit(0)
     end
 end
+
+BarcodeScanner.new.listen!
