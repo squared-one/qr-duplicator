@@ -6,7 +6,7 @@ After=network.target
 Type=simple
 User=scale
 WorkingDirectory=/home/scale/qr-duplicator
-ExecStart=bundle exec ruby barcode_duplicator.rb
+ExecStart=/home/scale/.rbenv/shims/bundler exec ruby barcode_duplicator.rb
 Restart=always
 
 [Install]
