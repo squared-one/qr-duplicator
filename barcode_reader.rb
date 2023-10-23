@@ -40,6 +40,9 @@ class BarcodeScanner
         logger.info "Barcode command: #{@cmd}"
         puts @cmd
         RQRCode::QRCode.new(@cmd).as_png.resize(200, 200).save("tmp/barcode.png")
+        `lp -d Honeywell_3 -o scaling=50 -o position=center /home/scale/qr-duplicator/tmp/barcode.png`
+        sleep(1)
+        `rm -rf /home/scale/qr-duplicator/tmp/barcode.png`
 
         @cmd = ''
       end
