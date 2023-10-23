@@ -1,12 +1,12 @@
 [Unit]
-Description=Scale Server
+Description=Barcode Duplicator
 After=network.target
 
 [Service]
 Type=simple
 User=scale
 WorkingDirectory=/home/scale/qr-duplicator
-ExecStart=/usr/local/bin/bundle exec ruby ./barcode-duplicator.rb
+ExecStart=bundle exec ruby ./barcode-duplicator.rb
 Restart=always
 
 [Install]
