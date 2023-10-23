@@ -73,7 +73,6 @@ class BarcodeScanner
 
       if xinput_device_id == 0 || device_event_id == 0
         logger.error 'Exiting barcode reader wasn\'t found!'
-        raise BarcodeNotFound
       end
 
       # Attach device
