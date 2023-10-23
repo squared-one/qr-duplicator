@@ -37,6 +37,7 @@ class BarcodeScanner
       unless @cmd.empty?
 
         logger.info "Barcode command: #{@cmd}"
+        puts @cmd
 
         @cmd = ''
       end
