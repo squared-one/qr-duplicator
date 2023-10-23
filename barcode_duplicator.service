@@ -1,0 +1,13 @@
+[Unit]
+Description=Scale Server
+After=network.target
+
+[Service]
+Type=simple
+User=scale
+WorkingDirectory=/home/scale/qr-duplicator
+ExecStart=/usr/local/bin/bundle exec puma ./barcode-duplicator.rb
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
