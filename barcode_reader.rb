@@ -38,6 +38,7 @@ class BarcodeScanner
 
         logger.info "Barcode command: #{@cmd}"
         puts @cmd
+        RQRCode::QRCode.new(@cmd).as_png.resize(200, 200).save("tmp/barcode.png")
 
         @cmd = ''
       end
