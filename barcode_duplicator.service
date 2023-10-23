@@ -6,7 +6,7 @@ After=network.target
 Type=simple
 User=scale
 WorkingDirectory=/home/scale/qr-duplicator
-ExecStart=/usr/local/bin/bundle exec puma ./barcode-duplicator.rb
+ExecStart=/usr/local/bin/bundle exec ruby ./barcode-duplicator.rb
 Restart=always
 
 [Install]
