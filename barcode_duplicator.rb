@@ -26,11 +26,9 @@ class BarcodeDuplicator
     shutdown
   end
 
-
-  def fetch_data_from_api
-    @headers = { 'Content-Type' => 'application/json; charset=utf-8', 'Authorization' => "Token token=b84dfc21cf084030ba119a5b74a13327" }
-    response = HTTParty.get("https://dev-www.vyvolej.to:3333/admin/api/line_items/203646/label", headers: @headers)
-
+  def fetch_label_from_api(line_item_id)
+    @headers = { 'Content-Type' => 'application/json; charset=utf-8', 'Authorization' => "Token token=#{ENV.fetch('SQUARED_API_TOKEN')}" }
+    response = HTTParty.get("#{ENV.fetch("API_BASE_URL")}/admin/api/line_items/#{line_item_id}/label", headers: @headers)
     if response.success?
       decoded_label = Base64.decode64(JSON.parse(response.body)["label"])
       File.open("/tmp/barcode.pdf", "w") { |f| f.write(decoded_label) }
@@ -51,7 +49,8 @@ class BarcodeDuplicator
     @device.on(:KEY_ENTER) do |_state, _key|
       unless @cmd.empty?
         logger.info "Barcode command: #{@cmd}"
-        pdf_path = fetch_data_from_api
+        line_item_id = @cmd[/^SQLI(\d+)W/, 1]
+        pdf_path = fetch_label_from_api(line_item_id)
         `lp -d Honeywell_3 -o scaling=50 -o position=center #{pdf_path}`
         sleep(1)
         `rm #{pdf_path}`
