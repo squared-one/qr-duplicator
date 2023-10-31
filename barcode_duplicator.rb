@@ -7,7 +7,6 @@ require 'rqrcode'
 require 'fileutils'
 require 'resolv-replace'
 require 'httparty'
-# require 'prawn'
 
 class BarcodeDuplicator
   def initialize
@@ -27,15 +26,15 @@ class BarcodeDuplicator
   end
 
   def fetch_label_from_api(line_item_id)
-    @headers = { 'Content-Type' => 'application/json; charset=utf-8', 'Authorization' => "Token token=#{ENV.fetch('SQUARED_API_TOKEN')}" }
-    response = HTTParty.get("#{ENV.fetch("API_BASE_URL")}/admin/api/line_items/#{line_item_id}/label", headers: @headers)
-    if response.success?
-      decoded_label = Base64.decode64(JSON.parse(response.body)["label"])
-      File.open("/tmp/barcode.pdf", "w") { |f| f.write(decoded_label) }
-       "/tmp/barcode.pdf"
-    else
-      raise "Error fetching data from API: #{response.code}"
-    end
+    @headers = { 'Content-Type' => 'application/json; charset=utf-8',
+                 'Authorization' => "Token token=#{ENV.fetch('SQUARED_API_TOKEN')}" }
+    response = HTTParty.get("#{ENV.fetch('API_BASE_URL')}/admin/api/line_items/#{line_item_id}/label",
+                            headers: @headers)
+    raise "Error fetching data from API: #{response.code}" unless response.success?
+
+    decoded_label = Base64.decode64(JSON.parse(response.body)['label'])
+    File.open('tmp/barcode.pdf', 'w') { |f| f.write(decoded_label) }
+    'tmp/barcode.pdf'
   end
 
   def listen!
@@ -49,11 +48,11 @@ class BarcodeDuplicator
     @device.on(:KEY_ENTER) do |_state, _key|
       unless @cmd.empty?
         logger.info "Barcode command: #{@cmd}"
-        line_item_id = @cmd.to_s[/^SQLI(\d+)W/, 1]
+        line_item_id = @cmd.to_s[/^SQLI(\d+)W/i, 1]
         pdf_path = fetch_label_from_api(line_item_id)
-        `lp -d Honeywell_3 -o scaling=50 -o position=center #{pdf_path}`
+        `lp -d Honeywell_3 -o position=center #{pdf_path}`
         sleep(1)
-        # `rm #{pdf_path}`
+        `rm #{pdf_path}`
         @cmd = ''
       end
     end
