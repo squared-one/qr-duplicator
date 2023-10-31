@@ -3,6 +3,8 @@ Description=Barcode Duplicator
 After=network.target
 
 [Service]
+Environment="API_BASE_URL=https://vyvolej.to" 
+Environment="SQUARED_API_TOKEN=TODO"
 Type=simple
 User=scale
 WorkingDirectory=/home/scale/qr-duplicator
