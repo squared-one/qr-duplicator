@@ -49,11 +49,11 @@ class BarcodeDuplicator
     @device.on(:KEY_ENTER) do |_state, _key|
       unless @cmd.empty?
         logger.info "Barcode command: #{@cmd}"
-        line_item_id = @cmd[/^SQLI(\d+)W/, 1]
+        line_item_id = @cmd.to_s[/^SQLI(\d+)W/, 1]
         pdf_path = fetch_label_from_api(line_item_id)
         `lp -d Honeywell_3 -o scaling=50 -o position=center #{pdf_path}`
         sleep(1)
-        `rm #{pdf_path}`
+        # `rm #{pdf_path}`
         @cmd = ''
       end
     end
