@@ -4,6 +4,10 @@
 require 'evdev' if RUBY_PLATFORM.match?(/linux/i)
 require 'logger'
 require 'rqrcode'
+require 'fileutils'
+require 'resolv-replace'
+require 'httparty'
+# require 'prawn'
 
 class BarcodeDuplicator
   def initialize
@@ -22,6 +26,20 @@ class BarcodeDuplicator
     shutdown
   end
 
+
+  def fetch_data_from_api
+    @headers = { 'Content-Type' => 'application/json; charset=utf-8', 'Authorization' => "Token token=b84dfc21cf084030ba119a5b74a13327" }
+    response = HTTParty.get("https://dev-www.vyvolej.to:3333/admin/api/line_items/203646/label", headers: @headers)
+
+    if response.success?
+      decoded_label = Base64.decode64(JSON.parse(response.body)["label"])
+      File.open("/tmp/barcode.pdf", "w") { |f| f.write(decoded_label) }
+       "/tmp/barcode.pdf"
+    else
+      raise "Error fetching data from API: #{response.code}"
+    end
+  end
+
   def listen!
     # Generate alphabet
     all_keys = *('0'..'Z').map { |l| :"KEY_#{l}" }
@@ -32,14 +50,11 @@ class BarcodeDuplicator
     # Process command
     @device.on(:KEY_ENTER) do |_state, _key|
       unless @cmd.empty?
-
         logger.info "Barcode command: #{@cmd}"
-        puts @cmd
-        RQRCode::QRCode.new(@cmd).as_png.resize(200, 200).save('tmp/barcode.png')
-        `lp -d Honeywell_3 -o scaling=50 -o position=center /home/scale/qr-duplicator/tmp/barcode.png`
+        pdf_path = fetch_data_from_api
+        `lp -d Honeywell_3 -o scaling=50 -o position=center #{pdf_path}`
         sleep(1)
-        `rm -rf /home/scale/qr-duplicator/tmp/barcode.png`
-
+        `rm #{pdf_path}`
         @cmd = ''
       end
     end
