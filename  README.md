@@ -31,3 +31,4 @@ lpadmin -p printername -E -v usb://Honeywell/PC42d-203-FP?serial=22235B54CB -m d
 lp -o scaling=50 -o position=center filename.png
 
 
+dependency imagemagick

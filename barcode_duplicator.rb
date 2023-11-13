@@ -26,15 +26,17 @@ class BarcodeDuplicator
   end
 
   def fetch_label_from_api(line_item_id)
-    @headers = { 'Content-Type' => 'application/json; charset=utf-8',
-                 'Authorization' => "Token token=#{ENV.fetch('SQUARED_API_TOKEN')}" }
+    headers = { 'Content-Type' => 'application/json; charset=utf-8',
+                'Authorization' => "Token token=#{ENV.fetch('SQUARED_API_TOKEN')}" }
     response = HTTParty.get("#{ENV.fetch('API_BASE_URL')}/admin/api/line_items/#{line_item_id}/label",
-                            headers: @headers)
-    raise "Error fetching data from API: #{response.code}" unless response.success?
-
-    decoded_label = Base64.decode64(JSON.parse(response.body)['label'])
-    File.open('tmp/barcode.pdf', 'w') { |f| f.write(decoded_label) }
-    'tmp/barcode.pdf'
+                            headers:)
+    if response.success?
+      decoded_label = Base64.decode64(JSON.parse(response.body)['label'])
+      File.open('tmp/barcode.pdf', 'w') { |f| f.write(decoded_label) }
+      true
+    else
+      false
+    end
   end
 
   def listen!
@@ -49,10 +51,15 @@ class BarcodeDuplicator
       unless @cmd.empty?
         logger.info "Barcode command: #{@cmd}"
         line_item_id = @cmd.to_s[/^SQLI(\d+)W/i, 1]
-        pdf_path = fetch_label_from_api(line_item_id)
-        `lp -d Honeywell_3 -o position=center #{pdf_path}`
+        if fetch_label_from_api(line_item_id)
+          `lp -d Honeywell_3 -o position=center 'tmp/barcode.pdf'`
+        else
+          RQRCode::QRCode.new(@cmd).as_png.resize(200, 200).save('tmp/barcode.png')
+          `convert 'tmp/barcode.png' -background white -gravity west -extent 600x200 -fill black -pointsize 20 -annotate +200+0 #{@cmd}" 'tmp/barcode.png'`
+          `lp -d Honeywell_3 -o scaling=90 -o position=center 'tmp/barcode.png'`
+        end
         sleep(1)
-        `rm #{pdf_path}`
+        `rm 'tmp/barcode.pdf'`
         @cmd = ''
       end
     end
