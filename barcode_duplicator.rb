@@ -55,7 +55,7 @@ class BarcodeDuplicator
           `lp -d Honeywell_3 -o position=center 'tmp/barcode.pdf'`
         else
           RQRCode::QRCode.new(@cmd).as_png.resize(180, 180).save('tmp/barcode.png')
-          `convert 'tmp/barcode.png' -background white -gravity west -extent 800x200 -fill black -pointsize 25 -annotate +200+0 "#{@cmd.upcase}" 'tmp/barcode.png'`
+          `convert 'tmp/barcode.png' -background white -gravity northwest -extent 850x200 -fill black -pointsize 35 -annotate +200+0 "#{@cmd.upcase}" 'tmp/barcode.png'`
           `lp -d Honeywell_3 -o scaling=95 'tmp/barcode.png'`
         end
         sleep(1)
