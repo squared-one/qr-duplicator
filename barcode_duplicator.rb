@@ -10,7 +10,8 @@ require 'httparty'
 
 class BarcodeDuplicator
   LINE_ITEM_BARCODE = /^SQLI(\d{1,8})(\w)/i
-  TOMOS_LINE_ITEM_BARCODE = /^[A-Z]{4}JB(\d{1,8})/i
+  TOMOS_WEIRD_LINE_ITEM_BARCODE = /^[A-Z]{4}SQLI(\d{1,8})(\w)/i
+  TOMOS_OLD_LINE_ITEM_BARCODE = /^[A-Z]{4}JB(\d{1,8})/i
 
   def initialize
     @logger = ::Logger.new('log/barcode.log', 1, 1024**2 * 100)
@@ -54,9 +55,7 @@ class BarcodeDuplicator
       unless @cmd.empty?
         logger.info "Barcode command: #{@cmd}"
         line_item_id = case @cmd
-        when LINE_ITEM_BARCODE
-          Regexp.last_match(1).to_i
-        when TOMOS_LINE_ITEM_BARCODE
+        when LINE_ITEM_BARCODE, TOMOS_OLD_LINE_ITEM_BARCODE, TOMOS_WEIRD_LINE_ITEM_BARCODE
           Regexp.last_match(1).to_i
         else
           nil
