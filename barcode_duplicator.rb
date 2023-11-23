@@ -30,6 +30,7 @@ class BarcodeDuplicator
   end
 
   def fetch_label_from_api(line_item_id)
+    @logger.info "Fetching label #{ENV.fetch('API_BASE_URL')}/admin/api/line_items/#{line_item_id}/label"
     headers = { 'Content-Type' => 'application/json; charset=utf-8',
                 'Authorization' => "Token token=#{ENV.fetch('SQUARED_API_TOKEN')}" }
     response = HTTParty.get("#{ENV.fetch('API_BASE_URL')}/admin/api/line_items/#{line_item_id}/label",
@@ -43,6 +44,22 @@ class BarcodeDuplicator
     end
   end
 
+  def line_item_id
+    case @cmd
+    when LINE_ITEM_BARCODE
+      @logger.info "Command is a line item barcode: #{@cmd}"
+      @cmd.match(LINE_ITEM_BARCODE)[1]
+    when TOMOS_OLD_LINE_ITEM_BARCODE
+      @logger.info "Command is a line item barcode: #{@cmd}"
+      @cmd.match(TOMOS_OLD_LINE_ITEM_BARCODE)[1]
+    when TOMOS_WEIRD_LINE_ITEM_BARCODE
+      @logger.info "Command is a line item barcode: #{@cmd}"
+      @cmd.match(TOMOS_WEIRD_LINE_ITEM_BARCODE)[1]
+    else
+      @logger.info "Line item did not match: #{@cmd}"
+    end
+  end
+
   def listen!
     # Generate alphabet
     all_keys = *('0'..'Z').map { |l| :"KEY_#{l}" }
@@ -53,17 +70,7 @@ class BarcodeDuplicator
     # Process command
     @device.on(:KEY_ENTER) do |_state, _key|
       unless @cmd.empty?
-        logger.info "Barcode command: #{@cmd}"
-        line_item_id = case @cmd
-        when LINE_ITEM_BARCODE
-          @cmd.match(LINE_ITEM_BARCODE)[1]
-        when TOMOS_OLD_LINE_ITEM_BARCODE
-          @cmd.match(TOMOS_OLD_LINE_ITEM_BARCODE)[1]
-        when TOMOS_WEIRD_LINE_ITEM_BARCODE
-          @cmd.match(TOMOS_WEIRD_LINE_ITEM_BARCODE)[1]
-        else
-          nil
-        end
+        @logger.info "Barcode command: #{@cmd}"
         if line_item_id && fetch_label_from_api(line_item_id)
           `lp -d Honeywell_3 -o position=center 'tmp/barcode.pdf'`
         else
