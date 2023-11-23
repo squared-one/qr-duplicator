@@ -9,6 +9,9 @@ require 'resolv-replace'
 require 'httparty'
 
 class BarcodeDuplicator
+  LINE_ITEM_BARCODE = /^SQLI(\d{1,8})(\w)/i
+  TOMOS_LINE_ITEM_BARCODE = /^[A-Z]{4}JB(\d{1,8})/i
+
   def initialize
     @logger = ::Logger.new('log/barcode.log', 1, 1024**2 * 100)
     @logger.info ''
@@ -50,8 +53,15 @@ class BarcodeDuplicator
     @device.on(:KEY_ENTER) do |_state, _key|
       unless @cmd.empty?
         logger.info "Barcode command: #{@cmd}"
-        line_item_id = @cmd.to_s[/^SQLI(\d+)\w/i, 1]
-        if fetch_label_from_api(line_item_id)
+        line_item_id = case @cmd
+        when LINE_ITEM_BARCODE
+          Regexp.last_match(1).to_i
+        when TOMOS_LINE_ITEM_BARCODE
+          Regexp.last_match(1).to_i
+        else
+          nil
+        end
+        if line_item_id && fetch_label_from_api(line_item_id)
           `lp -d Honeywell_3 -o position=center 'tmp/barcode.pdf'`
         else
           RQRCode::QRCode.new(@cmd).as_png.resize(180, 180).save('tmp/barcode.png')
