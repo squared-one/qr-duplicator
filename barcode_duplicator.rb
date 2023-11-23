@@ -55,8 +55,12 @@ class BarcodeDuplicator
       unless @cmd.empty?
         logger.info "Barcode command: #{@cmd}"
         line_item_id = case @cmd
-        when LINE_ITEM_BARCODE, TOMOS_OLD_LINE_ITEM_BARCODE, TOMOS_WEIRD_LINE_ITEM_BARCODE
-          Regexp.last_match(1).to_i
+        when LINE_ITEM_BARCODE
+          @cmd.match(LINE_ITEM_BARCODE)[1]
+        when TOMOS_OLD_LINE_ITEM_BARCODE
+          @cmd.match(TOMOS_OLD_LINE_ITEM_BARCODE)[1]
+        when TOMOS_WEIRD_LINE_ITEM_BARCODE
+          @cmd.match(TOMOS_WEIRD_LINE_ITEM_BARCODE)[1]
         else
           nil
         end
