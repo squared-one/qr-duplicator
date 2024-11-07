@@ -72,10 +72,12 @@ class BarcodeDuplicator
       unless @cmd.empty?
         @logger.info "Barcode command: #{@cmd}"
         if line_item_id && fetch_label_from_api(line_item_id)
+          @logger.info 'Printing barcode from the server'
           `lp -d Honeywell_3 -o position=center 'tmp/barcode.pdf'`
           sleep(1)
           `rm 'tmp/barcode.pdf'`
         else
+          @logger.info 'Duplicating barcode'
           RQRCode::QRCode.new(@cmd).as_png.resize(180, 180).save('tmp/barcode.png')
           `convert 'tmp/barcode.png' -background white -gravity west -extent 1000x200 -fill black -pointsize 35 -annotate +200+0 "#{@cmd.upcase}" 'tmp/barcode.png'`
           `lp -d Honeywell_3 -o scaling=99 'tmp/barcode.png'`
