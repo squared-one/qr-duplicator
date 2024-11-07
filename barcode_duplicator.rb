@@ -56,13 +56,10 @@ class BarcodeDuplicator
   def line_item_id
     case @cmd
     when LINE_ITEM_BARCODE
-      @logger.info "Command is a line item barcode: #{@cmd}"
       @cmd.match(LINE_ITEM_BARCODE)[1]
     when TOMOS_OLD_LINE_ITEM_BARCODE
-      @logger.info "Command is a tomos old barcode: #{@cmd}"
       @cmd.match(TOMOS_OLD_LINE_ITEM_BARCODE)[1]
     when TOMOS_WEIRD_LINE_ITEM_BARCODE
-      @logger.info "Command is a tomos weird barcode: #{@cmd}"
       @cmd.match(TOMOS_WEIRD_LINE_ITEM_BARCODE)[1]
     else
       @logger.info "Line item did not match: #{@cmd}"
@@ -80,12 +77,17 @@ class BarcodeDuplicator
     @device.on(:KEY_ENTER) do |_state, _key|
       unless @cmd.empty?
         @logger.info "Barcode command: #{@cmd}"
-        line_item_id && develop_line_item(line_item_id)
-        if line_item_id && fetch_label_from_api(line_item_id)
-          @logger.info 'Printing barcode from the server'
-          `lp -d Honeywell_3 -o position=center 'tmp/barcode.pdf'`
-          sleep(1)
-          `rm 'tmp/barcode.pdf'`
+        if line_item_id
+          # Call API to develop line item
+          develop_line_item(line_item_id)
+
+          # Fetch label from API
+          if fetch_label_from_api(line_item_id)
+            @logger.info 'Printing barcode from the server'
+            `lp -d Honeywell_3 -o position=center 'tmp/barcode.pdf'`
+            sleep(1)
+            `rm 'tmp/barcode.pdf'`
+          end
         else
           @logger.info 'Duplicating barcode'
           RQRCode::QRCode.new(@cmd).as_png.resize(180, 180).save('tmp/barcode.png')
