@@ -30,8 +30,9 @@ class BarcodeDuplicator
   end
 
   def develop_line_item(line_item_id)
+    headers = { 'Content-Type' => 'application/json; charset=utf-8',
+                'Authorization' => "Token token=#{ENV.fetch('SQUARED_API_TOKEN')}" }
     @logger.info "Develop line item #{ENV.fetch('API_BASE_URL')}/admin/api/line_items/#{line_item_id}"
-    # PUT with param event: "developing_started_and_finished"
     response = HTTParty.put("#{ENV.fetch('API_BASE_URL')}/admin/api/line_items/#{line_item_id}",
                             body: { event: 'developing_started_and_finished' }.to_json,
                             headers:,
@@ -40,6 +41,8 @@ class BarcodeDuplicator
   end
 
   def fetch_label_from_api(line_item_id)
+    headers = { 'Content-Type' => 'application/json; charset=utf-8',
+                'Authorization' => "Token token=#{ENV.fetch('SQUARED_API_TOKEN')}" }
     @logger.info "Fetching label #{ENV.fetch('API_BASE_URL')}/admin/api/line_items/#{line_item_id}/label"
     response = HTTParty.get("#{ENV.fetch('API_BASE_URL')}/admin/api/line_items/#{line_item_id}/label",
                             headers:,
@@ -113,11 +116,6 @@ class BarcodeDuplicator
   end
 
   private
-
-  def headers
-    @headers ||= { 'Content-Type' => 'application/json; charset=utf-8',
-                   'Authorization' => "Token token=#{ENV.fetch('SQUARED_API_TOKEN')}" }
-  end
 
   attr_reader :logger, :pidfile
 
