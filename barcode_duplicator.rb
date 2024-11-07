@@ -30,13 +30,18 @@ class BarcodeDuplicator
   end
 
   def develop_line_item(line_item_id)
-    headers = { 'Content-Type' => 'application/json; charset=utf-8',
-                'Authorization' => "Token token=#{ENV.fetch('SQUARED_API_TOKEN')}" }
+    # headers = { 'Content-Type' => 'application/json; charset=utf-8',
+    #             'Authorization' => "Token token=#{ENV.fetch('SQUARED_API_TOKEN')}" }
+    # @logger.info "Develop line item #{ENV.fetch('API_BASE_URL')}/admin/api/line_items/#{line_item_id}"
+    # response = HTTParty.put("#{ENV.fetch('API_BASE_URL')}/admin/api/line_items/#{line_item_id}",
+    #                         body: { event: 'developing_started_and_finished' }.to_json,
+    #                         headers:,
+    #                         verify: false)
+    # lets do curl
     @logger.info "Develop line item #{ENV.fetch('API_BASE_URL')}/admin/api/line_items/#{line_item_id}"
-    response = HTTParty.put("#{ENV.fetch('API_BASE_URL')}/admin/api/line_items/#{line_item_id}",
-                            body: { event: 'developing_started_and_finished' }.to_json,
-                            headers:,
-                            verify: false)
+    response = `curl -X PUT -H "Content-Type: application/json; charset=utf-8" -H "
+                Authorization: Token token=#{ENV.fetch('SQUARED_API_TOKEN')}" -d '{"event": "developing_started_and_finished"}' "#{ENV.fetch('API_BASE_URL')}/admin/api/line_items/#{line_item_id}"`
+
     @logger.info response.body
   end
 
