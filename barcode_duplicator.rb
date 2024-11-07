@@ -50,10 +50,10 @@ class BarcodeDuplicator
       @logger.info "Command is a line item barcode: #{@cmd}"
       @cmd.match(LINE_ITEM_BARCODE)[1]
     when TOMOS_OLD_LINE_ITEM_BARCODE
-      @logger.info "Command is a line item barcode: #{@cmd}"
+      @logger.info "Command is a tomos old barcode: #{@cmd}"
       @cmd.match(TOMOS_OLD_LINE_ITEM_BARCODE)[1]
     when TOMOS_WEIRD_LINE_ITEM_BARCODE
-      @logger.info "Command is a line item barcode: #{@cmd}"
+      @logger.info "Command is a tomos weird barcode: #{@cmd}"
       @cmd.match(TOMOS_WEIRD_LINE_ITEM_BARCODE)[1]
     else
       @logger.info "Line item did not match: #{@cmd}"
@@ -73,13 +73,15 @@ class BarcodeDuplicator
         @logger.info "Barcode command: #{@cmd}"
         if line_item_id && fetch_label_from_api(line_item_id)
           `lp -d Honeywell_3 -o position=center 'tmp/barcode.pdf'`
+          sleep(1)
+          `rm 'tmp/barcode.pdf'`
         else
           RQRCode::QRCode.new(@cmd).as_png.resize(180, 180).save('tmp/barcode.png')
           `convert 'tmp/barcode.png' -background white -gravity west -extent 1000x200 -fill black -pointsize 35 -annotate +200+0 "#{@cmd.upcase}" 'tmp/barcode.png'`
           `lp -d Honeywell_3 -o scaling=99 'tmp/barcode.png'`
+          sleep(1)
+          `rm 'tmp/barcode.png'`
         end
-        sleep(1)
-        `rm 'tmp/barcode.pdf'`
         @cmd = ''
       end
     end
