@@ -39,8 +39,7 @@ class BarcodeDuplicator
     #                         verify: false)
     # lets do curl
     @logger.info "Develop line item #{ENV.fetch('API_BASE_URL')}/admin/api/line_items/#{line_item_id}"
-    response = `curl -X PUT -H "Content-Type: application/json; charset=utf-8" -H "
-                Authorization: Token token=#{ENV.fetch('SQUARED_API_TOKEN')}" -d '{"event": "developing_started_and_finished"}' "#{ENV.fetch('API_BASE_URL')}/admin/api/line_items/#{line_item_id}"`
+    response = `curl -X PUT -H "Content-Type: application/json; charset=utf-8" -H "Authorization: Token token=#{ENV.fetch('SQUARED_API_TOKEN')}" -d '{"event": "developing_started_and_finished"}' "#{ENV.fetch('API_BASE_URL')}/admin/api/line_items/#{line_item_id}"`
 
     @logger.info response.body
   end
