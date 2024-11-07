@@ -2,3 +2,5 @@ Gemfile.lock
 .DS_Store
 barcode_duplicator.service
 tmp/barcode.png
+log/barcode.log
+tmp/pids/barcode.pid
