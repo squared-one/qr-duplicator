@@ -29,12 +29,21 @@ class BarcodeDuplicator
     shutdown
   end
 
+  def develop_line_item(line_item_id)
+    @logger.info "Develop line item #{ENV.fetch('API_BASE_URL')}/admin/api/line_items/#{line_item_id}"
+    # PUT with param event: "developing_started_and_finished"
+    response = HTTParty.put("#{ENV.fetch('API_BASE_URL')}/admin/api/line_items/#{line_item_id}",
+                            body: { event: 'developing_started_and_finished' }.to_json,
+                            headers:,
+                            verify: false)
+    @logger.info response.body
+  end
+
   def fetch_label_from_api(line_item_id)
     @logger.info "Fetching label #{ENV.fetch('API_BASE_URL')}/admin/api/line_items/#{line_item_id}/label"
-    headers = { 'Content-Type' => 'application/json; charset=utf-8',
-                'Authorization' => "Token token=#{ENV.fetch('SQUARED_API_TOKEN')}" }
     response = HTTParty.get("#{ENV.fetch('API_BASE_URL')}/admin/api/line_items/#{line_item_id}/label",
-                            headers:)
+                            headers:,
+                            verify: false)
     if response.success?
       decoded_label = Base64.decode64(JSON.parse(response.body)['label'])
       File.open('tmp/barcode.pdf', 'w') { |f| f.write(decoded_label) }
@@ -71,6 +80,7 @@ class BarcodeDuplicator
     @device.on(:KEY_ENTER) do |_state, _key|
       unless @cmd.empty?
         @logger.info "Barcode command: #{@cmd}"
+        line_item_id && develop_line_item(line_item_id)
         if line_item_id && fetch_label_from_api(line_item_id)
           @logger.info 'Printing barcode from the server'
           `lp -d Honeywell_3 -o position=center 'tmp/barcode.pdf'`
@@ -101,6 +111,11 @@ class BarcodeDuplicator
   end
 
   private
+
+  def headers
+    @headers ||= { 'Content-Type' => 'application/json; charset=utf-8',
+                   'Authorization' => "Token token=#{ENV.fetch('SQUARED_API_TOKEN')}" }
+  end
 
   attr_reader :logger, :pidfile
 
